@@ -19,56 +19,63 @@ Handle :: bit_field u32 {
 
 (source_file
   (bit_field_declaration
-    (identifier)
-    (type
+    name: (identifier)
+    type: (type
       (identifier))
     (comment)
-    (identifier)
-    (type
-      (identifier))
-    (number)
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (number))
     (comment)
-    (identifier)
-    (type
-      (identifier))
-    (binary_expression
-      (number)
-      (number))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (binary_expression
+        left: (number)
+        right: (number)))
     (comment)
-    (identifier)
-    (type
-      (identifier))
-    (member_expression
-      (identifier)
-      (identifier))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (member_expression
+        operand: (identifier)
+        field: (identifier)))
     (comment)
-    (identifier)
-    (type
-      (identifier))
-    (ternary_expression
-      (binary_expression
-        (member_expression
-          (identifier)
-          (identifier))
-        (number))
-      (number)
-      (number)))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (ternary_expression
+        condition: (binary_expression
+          left: (member_expression
+            operand: (identifier)
+            field: (identifier))
+          right: (number))
+        consequence: (number)
+        alternative: (number))))
   (bit_field_declaration
-    (identifier)
-    (type
+    name: (identifier)
+    type: (type
       (identifier))
-    (identifier)
-    (type
-      (identifier))
-    (number)
-    (identifier)
-    (type
-      (identifier))
-    (number)
-    (identifier)
-    (type
-      (identifier))
-    (number)))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (number))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (number))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (number))))
 
 ====================
 Build Tags

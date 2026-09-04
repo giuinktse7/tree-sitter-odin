@@ -161,13 +161,15 @@
 
 ; Fields
 
-(member_expression "." (identifier) @field)
+(member_expression field: (identifier) @field)
 
-(struct_type "{" (identifier) @field)
+(struct_member name: (identifier) @field)
 
 (struct_field (identifier) @field "="?)
 
-(field (identifier) @field)
+(field name: (identifier) @field)
+
+(bit_field_member name: (identifier) @field)
 
 ; Constants
 
@@ -177,7 +179,7 @@
 
 (member_expression . "." (identifier) @constant)
 
-(enum_declaration "{" (identifier) @constant)
+(enum_member name: (identifier) @constant)
 
 ; Macros
 

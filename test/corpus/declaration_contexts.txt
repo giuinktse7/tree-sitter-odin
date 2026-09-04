@@ -29,7 +29,7 @@ container :: proc() {
     (binary_expression
       left: (identifier)
       right: (member_expression
-        (identifier)))
+        field: (identifier)))
     (declaration_block
       (procedure_declaration
         name: (identifier)
@@ -50,7 +50,7 @@ container :: proc() {
       (binary_expression
         left: (identifier)
         right: (member_expression
-          (identifier)))
+          field: (identifier)))
       (declaration_block
         (procedure_declaration
           name: (identifier)

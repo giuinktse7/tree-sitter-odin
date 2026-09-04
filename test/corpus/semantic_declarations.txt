@@ -54,8 +54,8 @@ declared: int
         (identifier)))
     name: (identifier)
     parameters: (polymorphic_parameters
-      (identifier)
-      (type
+      name: (identifier)
+      type: (type
         (identifier)))
     tag: (tag)
     (number)
@@ -66,22 +66,24 @@ declared: int
           argument: (identifier))
         right: (number)))
     member: (field
-      (identifier)
-      (identifier)
-      (type
+      name: (identifier)
+      name: (identifier)
+      type: (type
         (identifier))))
   (enum_declaration
     name: (identifier)
     type: (type
       (identifier))
-    (identifier)
-    (number)
-    (identifier))
+    member: (enum_member
+      name: (identifier)
+      value: (number))
+    member: (enum_member
+      name: (identifier)))
   (union_declaration
     name: (identifier)
     parameters: (polymorphic_parameters
-      (identifier)
-      (type
+      name: (identifier)
+      type: (type
         (identifier)))
     tag: (tag)
     member: (type
@@ -92,10 +94,11 @@ declared: int
     name: (identifier)
     type: (type
       (identifier))
-    (identifier)
-    (type
-      (identifier))
-    (number))
+    member: (bit_field_member
+      name: (identifier)
+      type: (type
+        (identifier))
+      width: (number)))
   (overloaded_procedure_declaration
     name: (identifier)
     value: (identifier)
@@ -170,12 +173,12 @@ make_callback :: proc() -> proc(value: int) -> bool {
         calling_convention: (calling_convention)
         parameters: (parameters
           (parameter
-            (identifier)
-            (type
+            name: (identifier)
+            type: (type
               (identifier)))
           (default_parameter
-            (identifier)
-            (number)))
+            name: (identifier)
+            value: (number)))
         result: (type
           (tuple_type
             (named_type
@@ -204,8 +207,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
         calling_convention: (calling_convention)
         parameters: (parameters
           (parameter
-            (identifier)
-            (type
+            name: (identifier)
+            type: (type
               (identifier))))
         result: (type
           (identifier)))))
@@ -215,8 +218,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
       signature: (procedure_signature
         parameters: (parameters
           (parameter
-            (identifier)
-            (type
+            name: (identifier)
+            type: (type
               (identifier))))
         result: (type
           (identifier)))
@@ -227,14 +230,14 @@ make_callback :: proc() -> proc(value: int) -> bool {
       signature: (procedure_signature
         parameters: (parameters
           (parameter
-            (identifier)
-            (type
+            name: (identifier)
+            type: (type
               (procedure_type
                 calling_convention: (calling_convention)
                 parameters: (parameters
                   (parameter
-                    (identifier)
-                    (type
+                    name: (identifier)
+                    type: (type
                       (identifier))))
                 result: (type
                   (identifier)))))))
@@ -248,8 +251,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
           (procedure_type
             parameters: (parameters
               (parameter
-                (identifier)
-                (type
+                name: (identifier)
+                type: (type
                   (identifier))))
             result: (type
               (identifier)))))
@@ -259,8 +262,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
             signature: (procedure_signature
               parameters: (parameters
                 (parameter
-                  (identifier)
-                  (type
+                  name: (identifier)
+                  type: (type
                     (identifier))))
               result: (type
                 (identifier)))
