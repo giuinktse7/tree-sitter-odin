@@ -34,6 +34,7 @@
     "eslint": "^9.17.0",
     "eslint-config-treesitter": "^1.0.2",
     "prebuildify": "^6.0.1",
+    "tree-sitter": "^0.21.1",
     "tree-sitter-cli": "^0.24.5"
   },
   "peerDependencies": {
@@ -43,6 +44,10 @@
     "tree-sitter": {
       "optional": true
     }
+  },
+  "allowScripts": {
+    "tree-sitter@0.21.1": true,
+    "tree-sitter-cli@0.24.5": true
   },
   "scripts": {
     "install": "node-gyp-build",
