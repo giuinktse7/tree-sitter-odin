@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(CDPATH= cd -- "$script_dir/../.." && pwd)"
+fixture="$script_dir/fixtures/navigation.odin"
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/odin-ast-test.XXXXXX")"
+
+log() {
+    printf 'odin-ast test: %s\n' "$*" >&2
+}
+
+cleanup() {
+    rm -rf -- "$test_root"
+}
+trap cleanup EXIT
+
+case "$(uname -s)" in
+    MINGW* | MSYS* | CYGWIN*)
+        tree_sitter_name=tree-sitter.exe
+        odin_ast_name=odin-ast.exe
+        ;;
+    *)
+        tree_sitter_name=tree-sitter
+        odin_ast_name=odin-ast
+        ;;
+esac
+tree_sitter_bin="${TREE_SITTER:-$repo_root/node_modules/tree-sitter-cli/$tree_sitter_name}"
+
+if [[ ! -x "$tree_sitter_bin" || ! -d "$repo_root/node_modules/tree-sitter" ]]; then
+    log "installing development dependencies"
+    npm ci --prefix "$repo_root"
+fi
+
+log "checking committed generated parser files"
+generated_files=(src/parser.c src/grammar.json src/node-types.json)
+install -d "$test_root/generated"
+for generated_file in "${generated_files[@]}"; do
+    install -m 0644 \
+        "$repo_root/$generated_file" \
+        "$test_root/generated/$(basename "$generated_file")"
+done
+"$tree_sitter_bin" generate "$repo_root/grammar.js"
+for generated_file in "${generated_files[@]}"; do
+    if ! cmp -s \
+        "$repo_root/$generated_file" \
+        "$test_root/generated/$(basename "$generated_file")"; then
+        echo "odin-ast test: $generated_file is not current; run tree-sitter generate" >&2
+        exit 1
+    fi
+done
+log "committed generated parser files are current"
+
+ODIN_AST_CONFIG_DIR="$test_root/config" \
+ODIN_AST_BIN_DIR="$test_root/bin" \
+    "$script_dir/install"
+
+odin_ast="$test_root/bin/$odin_ast_name"
+config="$test_root/config/sgconfig.yml"
+
+log "running Tree-sitter corpus tests"
+(
+    cd "$repo_root"
+    "$tree_sitter_bin" test
+)
+log "Tree-sitter corpus tests passed"
+
+log "running Node binding tests"
+npm test --prefix "$repo_root"
+log "Node binding tests passed"
+
+log "running grammar lint checks"
+npm run lint --prefix "$repo_root"
+log "grammar lint checks passed"
+
+log "running odin-ast navigation tests"
+
+run_odin_ast() {
+    ODIN_AST_CONFIG="$config" "$odin_ast" "$@"
+}
+
+run_odin_ast outline --json=compact "$fixture" >"$test_root/outline.json"
+node "$script_dir/fixtures/verify-outline.js" <"$test_root/outline.json"
+
+run_odin_ast map "$fixture" >"$test_root/map.txt"
+grep -Fq "Public_Procedure" "$test_root/map.txt"
+grep -Fq "private_procedure" "$test_root/map.txt"
+if grep -Fq "core:fmt" "$test_root/map.txt"; then
+    echo "odin-ast test: map unexpectedly included imports" >&2
+    exit 1
+fi
+if grep -Fq "Local_Only" "$test_root/map.txt"; then
+    echo "odin-ast test: map unexpectedly included a procedure-local declaration" >&2
+    exit 1
+fi
+
+run_odin_ast find Public_Procedure "$fixture" >"$test_root/find-item.txt"
+grep -Fq $'function\tPublic_Procedure' "$test_root/find-item.txt"
+
+run_odin_ast find Alias "$fixture" >"$test_root/find-member.txt"
+grep -Fq $'enumMember\tStatus.Alias' "$test_root/find-member.txt"
+
+run_odin_ast find Other_Public_Field "$fixture" >"$test_root/find-grouped-member.txt"
+grep -Fq $'field\tRecord.Other_Public_Field' "$test_root/find-grouped-member.txt"
+
+run_odin_ast find SECOND_COUNT "$fixture" >"$test_root/find-grouped-item.txt"
+grep -Fq $'constant\tSECOND_COUNT' "$test_root/find-grouped-item.txt"
+
+run_odin_ast find Duplicate "$script_dir/fixtures" >"$test_root/find-cross-file.txt"
+[[ "$(wc -l <"$test_root/find-cross-file.txt")" -eq 3 ]]
+grep -Fq "navigation_other.odin" "$test_root/find-cross-file.txt"
+
+bodyless="$(run_odin_ast show "$fixture" Bodyless_Procedure)"
+[[ "$bodyless" == 'Bodyless_Procedure :: proc(value: int) -> bool ---' ]]
+
+member="$(run_odin_ast show "$fixture" Alias)"
+[[ "$member" == 'Alias = Ready' ]]
+
+grouped_member="$(run_odin_ast show "$fixture" Other_Public_Field)"
+[[ "$grouped_member" == 'Public_Field, Other_Public_Field: int' ]]
+
+grouped_item="$(run_odin_ast show "$fixture" SECOND_COUNT)"
+[[ "$grouped_item" == 'COUNT, SECOND_COUNT :: 1, 2' ]]
+
+if run_odin_ast show "$fixture" Duplicate >"$test_root/ambiguous.out" 2>"$test_root/ambiguous.err"; then
+    echo "odin-ast test: ambiguous show unexpectedly succeeded" >&2
+    exit 1
+fi
+grep -Fq "symbol is ambiguous: Duplicate (2 matches)" "$test_root/ambiguous.err"
+
+if run_odin_ast show "$fixture" Missing >"$test_root/missing.out" 2>"$test_root/missing.err"; then
+    echo "odin-ast test: missing show unexpectedly succeeded" >&2
+    exit 1
+fi
+grep -Fq "symbol not found: Missing" "$test_root/missing.err"
+
+if run_odin_ast find Procedure "$fixture" >"$test_root/inexact.out" 2>"$test_root/inexact.err"; then
+    echo "odin-ast test: inexact find unexpectedly succeeded" >&2
+    exit 1
+fi
+grep -Fq "symbol not found: Procedure" "$test_root/inexact.err"
+
+run_odin_ast run --kind enum_member --json=compact "$fixture" >"$test_root/run.json"
+grep -Fq '"text":"Alias = Ready"' "$test_root/run.json"
+
+audvar_file=/mnt/c/Users/jonat/Documents/dev/Audvar/audvar_client/src/render/debug_ui.odin
+if [[ -f "$audvar_file" ]]; then
+    run_odin_ast find Renderer_Debug_Ui "$audvar_file" >"$test_root/audvar-find.txt"
+    [[ "$(wc -l <"$test_root/audvar-find.txt")" -eq 2 ]]
+    if run_odin_ast show "$audvar_file" Renderer_Debug_Ui \
+        >"$test_root/audvar-show.out" 2>"$test_root/audvar-show.err"; then
+        echo "odin-ast test: conditional Audvar definition was not reported as ambiguous" >&2
+        exit 1
+    fi
+    grep -Fq "symbol is ambiguous: Renderer_Debug_Ui (2 matches)" "$test_root/audvar-show.err"
+fi
+
+log "odin-ast navigation tests passed"
+echo "odin-ast full test suite passed"

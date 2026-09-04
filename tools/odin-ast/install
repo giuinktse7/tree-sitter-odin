@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(CDPATH= cd -- "$script_dir/../.." && pwd)"
+
+config_root="${ODIN_AST_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/ast-grep/odin}"
+bin_root="${ODIN_AST_BIN_DIR:-$HOME/.local/bin}"
+ast_grep="${ODIN_AST_GREP:-ast-grep}"
+odin="${ODIN:-odin}"
+compiler="${CC:-cc}"
+
+case "$(uname -s)" in
+    MINGW* | MSYS* | CYGWIN*)
+        windows=true
+        executable_name=odin-ast.exe
+        ;;
+    *)
+        windows=false
+        executable_name=odin-ast
+        ;;
+esac
+
+step() {
+    printf '\n==> %s\n' "$*" >&2
+}
+
+fail() {
+    printf 'odin-ast install: %s\n' "$*" >&2
+    exit 1
+}
+
+step "Checking prerequisites"
+ast_grep_version="$("$ast_grep" --version 2>/dev/null)" ||
+    fail "ast-grep is missing or cannot run: $ast_grep"
+odin_version="$("$odin" version 2>/dev/null)" ||
+    fail "Odin is missing or cannot run: $odin"
+command -v "$compiler" >/dev/null 2>&1 ||
+    fail "C compiler is missing: $compiler"
+
+compiler_name="$(basename -- "$compiler")"
+case "${compiler_name,,}" in
+    cl | cl.exe | clang-cl | clang-cl.exe)
+        fail "CC must be a GCC-compatible driver such as cc, gcc, or clang; $compiler_name is not supported"
+        ;;
+esac
+
+printf '    ast-grep: %s\n' "$ast_grep_version" >&2
+printf '    Odin: %s\n' "$odin_version" >&2
+printf '    C compiler: %s\n' "$compiler" >&2
+
+stage="$(mktemp -d "${TMPDIR:-/tmp}/odin-ast-install.XXXXXX")"
+trap 'rm -rf -- "$stage"' EXIT
+stage_config="$stage/config"
+stage_bin="$stage/bin"
+install -d "$stage_config/parsers" "$stage_config/outline" "$stage_bin"
+
+compiler_flags=(-std=c11 -O2 -shared)
+if [[ "$windows" == false ]]; then
+    compiler_flags+=(-fPIC)
+fi
+
+step "Building staged installation"
+"$compiler" "${compiler_flags[@]}" \
+    -I "$repo_root/src" \
+    "$repo_root/src/parser.c" \
+    "$repo_root/src/scanner.c" \
+    -o "$stage_config/parsers/odin.so"
+"$odin" build "$script_dir" \
+    -out:"$stage_bin/$executable_name" \
+    -o:speed
+install -m 0644 "$script_dir/outline/odin.yml" "$stage_config/outline/odin.yml"
+install -m 0644 "$script_dir/sgconfig.yml" "$stage_config/sgconfig.yml"
+
+step "Checking staged installation"
+ODIN_AST_CONFIG="$stage_config/sgconfig.yml" \
+    "$stage_bin/$executable_name" \
+    find Public_Procedure "$script_dir/fixtures/navigation.odin" \
+    >/dev/null
+
+remove_legacy_executable=false
+if [[ "$windows" == true ]]; then
+    legacy_executable="$(
+        find "$bin_root" -maxdepth 1 -name odin-ast -print -quit 2>/dev/null || true
+    )"
+    if [[ -n "$legacy_executable" && -L "$legacy_executable" ]]; then
+        legacy_target="$(readlink "$legacy_executable")"
+        case "$legacy_target" in
+            */tools/odin-ast/odin-ast) remove_legacy_executable=true ;;
+            *) fail "refusing to replace unknown symbolic link: $legacy_executable" ;;
+        esac
+    elif [[ -n "$legacy_executable" && -f "$legacy_executable" ]]; then
+        if grep -Fqx -m 1 '#!/usr/bin/env node' "$legacy_executable"; then
+            remove_legacy_executable=true
+        else
+            fail "refusing to replace unknown file: $legacy_executable"
+        fi
+    fi
+fi
+
+step "Installing files"
+install -d "$config_root/parsers" "$config_root/outline" "$bin_root"
+install -m 0644 "$stage_config/parsers/odin.so" "$config_root/parsers/odin.so"
+install -m 0644 "$stage_config/outline/odin.yml" "$config_root/outline/odin.yml"
+install -m 0644 "$stage_config/sgconfig.yml" "$config_root/sgconfig.yml"
+if [[ "$remove_legacy_executable" == true ]]; then
+    rm -- "$legacy_executable"
+fi
+install -m 0755 "$stage_bin/$executable_name" "$bin_root/$executable_name"
+
+printf '\nInstalled Odin ast-grep configuration in %s\n' "$config_root"
+printf 'Installed odin-ast in %s\n' "$bin_root/$executable_name"

@@ -1,0 +1,92 @@
+====================
+File and procedure declaration contexts
+====================
+
+when ODIN_OS == .Windows {
+    windows_only :: proc() {}
+    foreign system {
+        foreign_proc :: proc() ---
+    }
+} else when ODIN_OS == .Linux {
+    linux_only :: proc() {}
+} else {
+    fallback :: proc() {}
+}
+
+container :: proc() {
+    when FEATURE_ENABLED {
+        local_proc :: proc() {}
+        foreign local_library {
+            local_foreign_proc :: proc() ---
+        }
+    }
+}
+
+---
+
+(source_file
+  (conditional_declaration
+    (binary_expression
+      left: (identifier)
+      right: (member_expression
+        field: (identifier)))
+    (declaration_block
+      (procedure_declaration
+        name: (identifier)
+        value: (procedure
+          signature: (procedure_signature
+            parameters: (parameters))
+          body: (block)))
+      (foreign_block
+        name: (identifier)
+        body: (declaration_block
+          (procedure_declaration
+            name: (identifier)
+            value: (procedure
+              signature: (procedure_signature
+                parameters: (parameters))
+              body: (uninitialized))))))
+    (else_when_declaration_clause
+      (binary_expression
+        left: (identifier)
+        right: (member_expression
+          field: (identifier)))
+      (declaration_block
+        (procedure_declaration
+          name: (identifier)
+          value: (procedure
+            signature: (procedure_signature
+              parameters: (parameters))
+            body: (block)))))
+    (else_declaration_clause
+      (declaration_block
+        (procedure_declaration
+          name: (identifier)
+          value: (procedure
+            signature: (procedure_signature
+              parameters: (parameters))
+            body: (block))))))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters))
+      body: (block
+        (when_statement
+          (identifier)
+          (block
+            (procedure_declaration
+              name: (identifier)
+              value: (procedure
+                signature: (procedure_signature
+                  parameters: (parameters))
+                body: (block)))
+            (foreign_statement
+              name: (identifier)
+              body: (block
+                (procedure_declaration
+                  name: (identifier)
+                  value: (procedure
+                    signature: (procedure_signature
+                      parameters: (parameters))
+                    body: (uninitialized)))))))))))

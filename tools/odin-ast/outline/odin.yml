@@ -1,0 +1,620 @@
+# Odin outline extraction for ast-grep 0.44.1 and newer.
+#
+# Item rules intentionally match whole declarations so outline byte ranges can
+# reproduce exact definitions. Name and signature text comes only from semantic
+# CST fields. An item is eligible only when its immediate parent is source_file
+# or declaration_block; procedure-local declarations therefore stay out of the
+# file outline.
+
+id: odin-package
+language: odin
+role: item
+symbolType: package
+rule:
+  all:
+    - kind: package_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        kind: source_file
+        stopBy: neighbor
+name: $NAME
+signature: package $NAME
+isImport: false
+isExported: false
+
+---
+
+id: odin-import-string
+language: odin
+role: item
+symbolType: module
+rule:
+  all:
+    - kind: import_declaration
+    - has:
+        field: path
+        kind: string
+        pattern: $QUOTED_PATH
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+transform:
+  PATH:
+    substring:
+      source: $QUOTED_PATH
+      startChar: 1
+      endChar: -1
+name: $PATH
+isImport: true
+isExported: false
+
+---
+
+id: odin-import-identifier
+language: odin
+role: item
+symbolType: module
+rule:
+  all:
+    - kind: import_declaration
+    - has:
+        field: path
+        kind: identifier
+        pattern: $PATH
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $PATH
+isImport: true
+isExported: false
+
+---
+
+id: odin-procedure
+language: odin
+role: item
+symbolType: function
+rule:
+  all:
+    - kind: procedure_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - has:
+        field: value
+        kind: procedure
+        has:
+          field: signature
+          kind: procedure_signature
+          pattern: $SIGNATURE
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+signature: '$NAME :: $SIGNATURE'
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-overloaded-procedure
+language: odin
+role: item
+symbolType: function
+rule:
+  all:
+    - kind: overloaded_procedure_declaration
+    - pattern: $SIGNATURE
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+signature: $SIGNATURE
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-struct
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: struct_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-struct-field
+language: odin
+role: member
+parentRuleIds: [odin-struct]
+symbolType: field
+rule:
+  kind: field
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+isPublic:
+  has:
+    field: name
+    regex: '^[A-Z]'
+
+---
+
+id: odin-enum
+language: odin
+role: item
+symbolType: enum
+rule:
+  all:
+    - kind: enum_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-enum-member
+language: odin
+role: member
+parentRuleIds: [odin-enum, odin-inline-enum]
+symbolType: enumMember
+rule:
+  kind: enum_member
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+isPublic:
+  has:
+    field: name
+    regex: '^[A-Z]'
+
+---
+
+id: odin-union
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: union_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-bit-field
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: bit_field_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-bit-field-member
+language: odin
+role: member
+parentRuleIds: [odin-bit-field, odin-inline-bit-field]
+symbolType: field
+rule:
+  kind: bit_field_member
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+isPublic:
+  has:
+    field: name
+    regex: '^[A-Z]'
+
+---
+
+id: odin-inline-struct
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: const_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - has:
+        field: value
+        kind: type
+        has:
+          kind: struct_type
+          stopBy: neighbor
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-inline-struct-field
+language: odin
+role: member
+parentRuleIds: [odin-inline-struct]
+symbolType: field
+rule:
+  kind: struct_member
+  has:
+    field: name
+    kind: identifier
+    pattern: $NAME
+name: $NAME
+isPublic:
+  has:
+    field: name
+    regex: '^[A-Z]'
+
+---
+
+id: odin-inline-enum
+language: odin
+role: item
+symbolType: enum
+rule:
+  all:
+    - kind: const_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - has:
+        field: value
+        kind: type
+        has:
+          kind: enum_type
+          stopBy: neighbor
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-inline-union
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: const_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - has:
+        field: value
+        kind: type
+        has:
+          kind: union_type
+          stopBy: neighbor
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-inline-bit-field
+language: odin
+role: item
+symbolType: struct
+rule:
+  all:
+    - kind: const_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - has:
+        field: value
+        kind: type
+        has:
+          kind: bit_field_type
+          stopBy: neighbor
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-constant
+language: odin
+role: item
+symbolType: constant
+rule:
+  all:
+    - kind: const_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-typed-constant
+language: odin
+role: item
+symbolType: constant
+rule:
+  all:
+    - kind: const_type_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-variable
+language: odin
+role: item
+symbolType: variable
+rule:
+  all:
+    - kind: variable_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor
+
+---
+
+id: odin-typed-variable
+language: odin
+role: item
+symbolType: variable
+rule:
+  all:
+    - kind: var_declaration
+    - has:
+        field: name
+        kind: identifier
+        pattern: $NAME
+    - inside:
+        any:
+          - kind: source_file
+          - kind: declaration_block
+        stopBy: neighbor
+name: $NAME
+isImport: false
+isExported:
+  all:
+    - has:
+        field: name
+        regex: '^[A-Z]'
+    - not:
+        has:
+          kind: attributes
+          regex: '(?:@\(|,)\s*private\s*(?:=|,|\))'
+          stopBy: neighbor

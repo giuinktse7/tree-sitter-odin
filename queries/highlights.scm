@@ -81,19 +81,19 @@
 
 ; Namespaces
 
-(package_declaration (identifier) @namespace)
+(package_declaration name: (identifier) @namespace)
 
 (import_declaration alias: (identifier) @namespace)
 
-(foreign_block (identifier) @namespace)
+(foreign_block name: (identifier) @namespace)
 
 (using_statement (identifier) @namespace)
 
 ; Parameters
 
-(parameter (identifier) @parameter ":" "="? (identifier)? @constant)
+(parameter name: (identifier) @parameter)
 
-(default_parameter (identifier) @parameter ":=")
+(default_parameter name: (identifier) @parameter)
 
 (named_type (identifier) @parameter)
 
@@ -101,13 +101,17 @@
 
 ; Functions
 
-(procedure_declaration (identifier) @type)
+(procedure_declaration name: (identifier) @type)
 
-(procedure_declaration (identifier) @function (procedure (block)))
+(procedure_declaration
+  name: (identifier) @function
+  value: (procedure body: (block)))
 
-(procedure_declaration (identifier) @function (procedure (uninitialized)))
+(procedure_declaration
+  name: (identifier) @function
+  value: (procedure body: (uninitialized)))
 
-(overloaded_procedure_declaration (identifier) @function)
+(overloaded_procedure_declaration name: (identifier) @function)
 
 (call_expression function: (identifier) @function.call)
 
@@ -129,15 +133,17 @@
 
 "..." @type.builtin
 
-(struct_declaration (identifier) @type "::")
+(struct_declaration name: (identifier) @type)
 
-(enum_declaration (identifier) @type "::")
+(enum_declaration name: (identifier) @type)
 
-(union_declaration (identifier) @type "::")
+(union_declaration name: (identifier) @type)
 
-(bit_field_declaration (identifier) @type "::")
+(bit_field_declaration name: (identifier) @type)
 
-(const_declaration (identifier) @type "::" [(array_type) (distinct_type) (bit_set_type) (pointer_type)])
+(const_declaration
+  name: (identifier) @type
+  value: [(array_type) (distinct_type) (bit_set_type) (pointer_type)])
 
 (struct . (identifier) @type)
 
@@ -145,9 +151,11 @@
 
 (bit_set_type (identifier) @type ";")
 
-(procedure_type (parameters (parameter (identifier) @type)))
+(procedure_type
+  parameters: (parameters
+    (parameter type: (type (identifier) @type))))
 
-(polymorphic_parameters (identifier) @type)
+(polymorphic_parameters name: (identifier) @type)
 
 ((identifier) @type
   (#lua-match? @type "^[A-Z][a-zA-Z0-9]*$")
@@ -155,13 +163,15 @@
 
 ; Fields
 
-(member_expression "." (identifier) @field)
+(member_expression field: (identifier) @field)
 
-(struct_type "{" (identifier) @field)
+(struct_member name: (identifier) @field)
 
 (struct_field (identifier) @field "="?)
 
-(field (identifier) @field)
+(field name: (identifier) @field)
+
+(bit_field_member name: (identifier) @field)
 
 ; Constants
 
@@ -169,9 +179,9 @@
   (#lua-match? @constant "^_*[A-Z][A-Z0-9_]*$")
   (#not-has-parent? @constant type parameter))
 
-(member_expression . "." (identifier) @constant)
+(member_expression . "." field: (identifier) @constant)
 
-(enum_declaration "{" (identifier) @constant)
+(enum_member name: (identifier) @constant)
 
 ; Macros
 

@@ -1,0 +1,81 @@
+====================
+Procedure result tuple types
+====================
+
+single :: proc() -> Value {}
+unnamed_pair :: proc() -> (Value, bool) {}
+named_pair :: proc() -> (value: Value, ok: bool) {}
+grouped_named_pair :: proc() -> (x, y: Value, ok: bool) {}
+multiline :: proc() -> (
+    Value,
+    bool,
+) {}
+
+---
+
+(source_file
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (identifier)))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (type
+              (identifier))
+            (type
+              (identifier)))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (named_type
+              (identifier)
+              (type
+                (identifier)))
+            (named_type
+              (identifier)
+              (type
+                (identifier))))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (named_type
+              (identifier)
+              (identifier)
+              (type
+                (identifier)))
+            (named_type
+              (identifier)
+              (type
+                (identifier))))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (type
+              (identifier))
+            (type
+              (identifier)))))
+      body: (block))))

@@ -2,6 +2,7 @@
 
 [
   (block)
+  (declaration_block)
   (declaration)
   (statement)
 ] @scope
@@ -12,30 +13,44 @@
 
 ; Definitions
 
-(package_declaration (identifier) @definition.namespace)
+(package_declaration name: (identifier) @definition.namespace)
 
 (import_declaration alias: (identifier) @definition.namespace)
 
-(procedure_declaration (identifier) @definition.function)
+(procedure_declaration name: (identifier) @definition.function)
 
-(struct_declaration (identifier) @definition.type "::")
+(overloaded_procedure_declaration name: (identifier) @definition.function)
 
-(enum_declaration (identifier) @definition.enum "::")
+(struct_declaration name: (identifier) @definition.type)
 
-(union_declaration (identifier) @definition.type "::")
+(enum_declaration name: (identifier) @definition.enum)
 
-(bit_field_declaration (identifier) @definition.type "::")
+(union_declaration name: (identifier) @definition.type)
 
-(variable_declaration (identifier) @definition.var ":=")
+(bit_field_declaration name: (identifier) @definition.type)
 
-(const_declaration (identifier) @definition.constant "::")
+(variable_declaration name: (identifier) @definition.var)
 
-(const_type_declaration (identifier) @definition.type ":")
+(var_declaration name: (identifier) @definition.var)
 
-(parameter (identifier) @definition.parameter ":"?)
+(assignment_statement
+  left: (identifier) @definition.var
+  operator: ":=")
 
-(default_parameter (identifier) @definition.parameter ":=")
+(const_declaration name: (identifier) @definition.constant)
 
-(field (identifier) @definition.field ":")
+(const_type_declaration name: (identifier) @definition.type)
+
+(parameter name: (identifier) @definition.parameter)
+
+(default_parameter name: (identifier) @definition.parameter)
+
+(field name: (identifier) @definition.field)
+
+(struct_member name: (identifier) @definition.field)
+
+(enum_member name: (identifier) @definition.enum)
+
+(bit_field_member name: (identifier) @definition.field)
 
 (label_statement (identifier) @definition ":")
