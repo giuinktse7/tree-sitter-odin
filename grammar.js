@@ -41,6 +41,11 @@ module.exports = grammar({
     [$.array_type],
     // lol: size_of(Map_Cell(T){}.data) / size_of(T) when size_of(T) > 0 else 1
     [$._expression_no_tag, $.struct],
+    [$.named_type],
+    [$.type, $._named_type_names],
+    [$._tuple_element_type, $._named_type_names],
+    [$.named_type, $.polymorphic_type],
+    [$.named_type, $.specialized_type],
   ],
 
   externals: $ => [
@@ -697,29 +702,7 @@ module.exports = grammar({
 
     address: $ => seq($.expression, '^'),
 
-    type: $ => prec.right(choice(
-      $.identifier,
-      $.pointer_type,
-      $.variadic_type,
-      $.array_type,
-      $.map_type,
-      $.union_type,
-      $.bit_set_type,
-      $.matrix_type,
-      $.field_type,
-      $.tuple_type,
-      $.struct_type,
-      $.enum_type,
-      $.bit_field_type,
-      $.constant_type,
-      $.specialized_type,
-      $._procedure_type,
-      $.distinct_type,
-      $.empty_type,
-      $.polymorphic_type,
-      $.conditional_type,
-      '...',
-    )),
+    type: $ => prec.right(typeChoice($)),
 
     pointer_type: $ => prec.left(seq('^', $.type)),
 
@@ -760,10 +743,24 @@ module.exports = grammar({
     tuple_type: $ => seq(
       '(',
       optional(seq(
-        commaSep1(choice($.type, $.named_type, $.default_type)),
-        optional(','),
+        choice(
+          $._unnamed_tuple_types,
+          $._named_tuple_types,
+        ),
       )),
       ')',
+    ),
+
+    _unnamed_tuple_types: $ => seq(
+      alias($._tuple_element_type, $.type),
+      optional(seq(',', optional($._unnamed_tuple_types))),
+    ),
+
+    _tuple_element_type: $ => typeChoice($),
+
+    _named_tuple_types: $ => seq(
+      choice($.named_type, $.default_type),
+      optional(seq(',', optional($._named_tuple_types))),
     ),
 
     struct_type: $ => prec(1, seq(
@@ -809,7 +806,14 @@ module.exports = grammar({
       '}',
     ),
 
-    named_type: $ => prec.right(seq(commaSep1($.identifier), ':', $.type, optional(seq('=', $.literal)))),
+    named_type: $ => prec.dynamic(1, seq(
+      $._named_type_names,
+      ':',
+      $.type,
+      optional(prec(1, seq('=', $.literal))),
+    )),
+
+    _named_type_names: $ => commaSep1($.identifier),
 
     default_type: $ => seq($.identifier, ':=', $.expression),
 
@@ -997,6 +1001,39 @@ module.exports = grammar({
 });
 
 module.exports.PREC = PREC;
+
+/**
+ * Creates the alternatives accepted as an Odin type
+ *
+ * @param {GrammarSymbols<any>} $
+ *
+ * @returns {ChoiceRule}
+ */
+function typeChoice($) {
+  return choice(
+    $.identifier,
+    $.pointer_type,
+    $.variadic_type,
+    $.array_type,
+    $.map_type,
+    $.union_type,
+    $.bit_set_type,
+    $.matrix_type,
+    $.field_type,
+    $.tuple_type,
+    $.struct_type,
+    $.enum_type,
+    $.bit_field_type,
+    $.constant_type,
+    $.specialized_type,
+    $._procedure_type,
+    $.distinct_type,
+    $.empty_type,
+    $.polymorphic_type,
+    $.conditional_type,
+    '...',
+  );
+}
 
 /**
  * Creates a rule to optionally match one or more of the rules separated by a comma

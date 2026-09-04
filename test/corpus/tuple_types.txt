@@ -1,0 +1,76 @@
+====================
+Procedure result tuple types
+====================
+
+single :: proc() -> Value {}
+unnamed_pair :: proc() -> (Value, bool) {}
+named_pair :: proc() -> (value: Value, ok: bool) {}
+grouped_named_pair :: proc() -> (x, y: Value, ok: bool) {}
+multiline :: proc() -> (
+    Value,
+    bool,
+) {}
+
+---
+
+(source_file
+  (procedure_declaration
+    (identifier)
+    (procedure
+      (parameters)
+      (type
+        (identifier))
+      (block)))
+  (procedure_declaration
+    (identifier)
+    (procedure
+      (parameters)
+      (type
+        (tuple_type
+          (type
+            (identifier))
+          (type
+            (identifier))))
+      (block)))
+  (procedure_declaration
+    (identifier)
+    (procedure
+      (parameters)
+      (type
+        (tuple_type
+          (named_type
+            (identifier)
+            (type
+              (identifier)))
+          (named_type
+            (identifier)
+            (type
+              (identifier)))))
+      (block)))
+  (procedure_declaration
+    (identifier)
+    (procedure
+      (parameters)
+      (type
+        (tuple_type
+          (named_type
+            (identifier)
+            (identifier)
+            (type
+              (identifier)))
+          (named_type
+            (identifier)
+            (type
+              (identifier)))))
+      (block)))
+  (procedure_declaration
+    (identifier)
+    (procedure
+      (parameters)
+      (type
+        (tuple_type
+          (type
+            (identifier))
+          (type
+            (identifier))))
+      (block))))
