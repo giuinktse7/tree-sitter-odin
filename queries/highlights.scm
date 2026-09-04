@@ -101,11 +101,15 @@
 
 ; Functions
 
-(procedure_declaration (identifier) @type)
+(procedure_declaration name: (identifier) @type)
 
-(procedure_declaration (identifier) @function (procedure (block)))
+(procedure_declaration
+  name: (identifier) @function
+  value: (procedure body: (block)))
 
-(procedure_declaration (identifier) @function (procedure (uninitialized)))
+(procedure_declaration
+  name: (identifier) @function
+  value: (procedure body: (uninitialized)))
 
 (overloaded_procedure_declaration (identifier) @function)
 
@@ -145,7 +149,9 @@
 
 (bit_set_type (identifier) @type ";")
 
-(procedure_type (parameters (parameter (identifier) @type)))
+(procedure_type
+  parameters: (parameters
+    (parameter (identifier) @type)))
 
 (polymorphic_parameters (identifier) @type)
 

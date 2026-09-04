@@ -46,6 +46,11 @@ module.exports = grammar({
     [$._tuple_element_type, $._named_type_names],
     [$.named_type, $.polymorphic_type],
     [$.named_type, $.specialized_type],
+    [$.const_declaration, $.assignment_statement, $.update_statement, $.var_declaration],
+    [$.assignment_statement, $.update_statement, $.var_declaration],
+    [$.assignment_statement, $.update_statement, $._for_in_expression, $.var_declaration],
+    [$.const_declaration, $.assignment_statement, $.var_declaration],
+    [$.assignment_statement, $.var_declaration],
   ],
 
   externals: $ => [
@@ -112,7 +117,7 @@ module.exports = grammar({
 
     build_tag: $ => seq('#+', /.+/),
 
-    package_declaration: $ => seq('package', $.identifier),
+    package_declaration: $ => seq('package', field('name', $.identifier)),
 
     import_declaration: $ => seq(
       optional($.attributes),
@@ -120,10 +125,10 @@ module.exports = grammar({
       'import',
       optional(field('alias', $.identifier)),
       choice(
-        $.string,
+        field('path', $.string),
         seq(
           '{',
-          commaSep1(choice($.string, $.identifier)),
+          commaSep1(field('path', choice($.string, $.identifier))),
           optional(','),
           '}',
         ),
@@ -132,24 +137,29 @@ module.exports = grammar({
 
     procedure_declaration: $ => seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       '::',
-      optional($.tag),
-      $.procedure,
+      optional(field('tag', $.tag)),
+      field('value', $.procedure),
     ),
-    procedure: $ => prec.right(seq(
+
+    procedure: $ => prec.right(1, seq(
+      field('signature', $.procedure_signature),
+      optional(field('body', choice($.block, $.uninitialized))),
+    )),
+
+    procedure_signature: $ => prec.right(seq(
       'proc',
-      optional($.calling_convention),
-      $.parameters,
+      optional(field('calling_convention', $.calling_convention)),
+      field('parameters', $.parameters),
       optional(seq(
         '->',
-        optional($.tag),
-        choice($.type, $.named_type),
-        optional($.tag),
+        optional(field('tag', $.tag)),
+        field('result', choice($.type, $.named_type)),
+        optional(field('tag', $.tag)),
       )),
-      optional($.where_clause),
-      optional($.tag),
-      optional(choice($.block, $.uninitialized)),
+      optional(field('constraints', $.where_clause)),
+      optional(field('tag', $.tag)),
     )),
 
     where_clause: $ => prec.right(seq('where', commaSep1(prec.right($.expression)))),
@@ -169,12 +179,12 @@ module.exports = grammar({
 
     overloaded_procedure_declaration: $ => seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       '::',
       'proc',
       '{',
       optional(seq(
-        commaSep1($.expression),
+        commaSep1(field('value', $.expression)),
         optional(','),
       )),
       '}',
@@ -182,15 +192,15 @@ module.exports = grammar({
 
     struct_declaration: $ => seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       '::',
       'struct',
-      optional($.polymorphic_parameters),
-      repeat(seq($.tag, optional(choice($.identifier, $.number)))), // #align 16
-      optional($.where_clause),
+      optional(field('parameters', $.polymorphic_parameters)),
+      repeat(seq(field('tag', $.tag), optional(choice($.identifier, $.number)))), // #align 16
+      optional(field('constraints', $.where_clause)),
       '{',
       optional(seq(
-        commaSep1($.field),
+        commaSep1(field('member', $.field)),
         optional(','),
       )),
       '}',
@@ -199,10 +209,10 @@ module.exports = grammar({
     enum_declaration: $ => seq(
       optional($.attributes),
       optional('using'),
-      $.expression,
+      field('name', $.expression),
       '::',
       'enum',
-      optional($.type),
+      optional(field('type', $.type)),
       '{',
       optional(seq(
         commaSep1(seq($.identifier, optional(seq('=', $.expression)))),
@@ -213,14 +223,14 @@ module.exports = grammar({
 
     union_declaration: $ => seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       '::',
       'union',
-      optional($.polymorphic_parameters),
-      optional($.tag),
+      optional(field('parameters', $.polymorphic_parameters)),
+      optional(field('tag', $.tag)),
       '{',
       optional(seq(
-        commaSep1($.type),
+        commaSep1(field('member', $.type)),
         optional(','),
       )),
       '}',
@@ -228,10 +238,10 @@ module.exports = grammar({
 
     bit_field_declaration: $ => seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       '::',
       'bit_field',
-      $.type,
+      field('type', $.type),
       '{',
       optional(seq(
         commaSep1(seq($.identifier, ':', $.type, '|', $.expression)),
@@ -242,49 +252,49 @@ module.exports = grammar({
 
     variable_declaration: $ => seq(
       optional($.attributes),
-      commaSep1($.expression),
+      commaSep1(field('name', $.expression)),
       ':=',
-      commaSep1(choice($.expression, $.procedure)),
+      commaSep1(field('value', choice($.expression, $.procedure))),
       optional(','),
     ),
 
     const_declaration: $ => seq(
       optional($.attributes),
-      commaSep1($.expression),
+      commaSep1(field('name', $.expression)),
       '::',
-      optional($.tag),
+      optional(field('tag', $.tag)),
       commaSep1(
         choice(
-          $.expression,
-          seq(alias('#type', $.tag), $.type),
-          $.array_type,
-          $.bit_set_type,
-          $.pointer_type,
+          field('value', $.expression),
+          seq(alias('#type', $.tag), field('value', $.type)),
+          field('value', $.array_type),
+          field('value', $.bit_set_type),
+          field('value', $.pointer_type),
         ),
       ),
     ),
 
     const_type_declaration: $ => prec(1, seq(
       optional($.attributes),
-      $.expression,
+      field('name', $.expression),
       ':',
-      $.type,
+      field('type', $.type),
       ':',
-      $.expression,
+      field('value', $.expression),
     )),
 
     foreign_block: $ => seq(
       optional($.attributes),
       'foreign',
-      optional($.identifier),
-      $.declaration_block,
+      optional(field('name', $.identifier)),
+      field('body', $.declaration_block),
     ),
 
     foreign_statement: $ => seq(
       optional($.attributes),
       'foreign',
-      optional($.identifier),
-      $.block,
+      optional(field('name', $.identifier)),
+      field('body', $.block),
     ),
 
     attributes: $ => repeat1($.attribute),
@@ -545,11 +555,14 @@ module.exports = grammar({
 
     var_declaration: $ => prec.right(seq(
       optional($.attributes),
-      commaSep1($.expression),
+      commaSep1(field('name', $.expression)),
       ':',
-      optional($.tag),
+      optional(field('tag', $.tag)),
       choice(
-        seq($.type, optional(seq(choice('=', ':'), commaSep1($.expression)))),
+        seq(
+          field('type', $.type),
+          optional(seq(choice('=', ':'), commaSep1(field('value', $.expression)))),
+        ),
         // seq('=', $.expression), // +2k state count no ty
       ),
     )),
@@ -558,7 +571,7 @@ module.exports = grammar({
       'return',
       optional($.tag),
       optional(seq(
-        commaExternalSep1(choice($.expression, $._procedure_type), $),
+        commaExternalSep1(choice($.expression, $.procedure, $._procedure_type), $),
         optional(','),
       )),
     )),
@@ -854,7 +867,7 @@ module.exports = grammar({
 
     specialized_type: $ => prec.right(seq($.type, '/', $.type)),
 
-    _procedure_type: $ => alias($.procedure, $.procedure_type),
+    _procedure_type: $ => alias($.procedure_signature, $.procedure_type),
 
     distinct_type: $ => prec.right(seq('distinct', optional($.tag), $.type)),
 
@@ -940,7 +953,7 @@ module.exports = grammar({
       $.expression,
       optional(seq(
         '=',
-        choice($.expression, $._procedure_type),
+        choice($.expression, $.procedure, $._procedure_type),
       )),
     )),
 

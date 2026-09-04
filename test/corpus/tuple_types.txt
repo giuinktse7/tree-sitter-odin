@@ -15,62 +15,67 @@ multiline :: proc() -> (
 
 (source_file
   (procedure_declaration
-    (identifier)
-    (procedure
-      (parameters)
-      (type
-        (identifier))
-      (block)))
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (identifier)))
+      body: (block)))
   (procedure_declaration
-    (identifier)
-    (procedure
-      (parameters)
-      (type
-        (tuple_type
-          (type
-            (identifier))
-          (type
-            (identifier))))
-      (block)))
-  (procedure_declaration
-    (identifier)
-    (procedure
-      (parameters)
-      (type
-        (tuple_type
-          (named_type
-            (identifier)
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
             (type
-              (identifier)))
-          (named_type
-            (identifier)
+              (identifier))
             (type
               (identifier)))))
-      (block)))
+      body: (block)))
   (procedure_declaration
-    (identifier)
-    (procedure
-      (parameters)
-      (type
-        (tuple_type
-          (named_type
-            (identifier)
-            (identifier)
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (named_type
+              (identifier)
+              (type
+                (identifier)))
+            (named_type
+              (identifier)
+              (type
+                (identifier))))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
+            (named_type
+              (identifier)
+              (identifier)
+              (type
+                (identifier)))
+            (named_type
+              (identifier)
+              (type
+                (identifier))))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (tuple_type
             (type
-              (identifier)))
-          (named_type
-            (identifier)
+              (identifier))
             (type
               (identifier)))))
-      (block)))
-  (procedure_declaration
-    (identifier)
-    (procedure
-      (parameters)
-      (type
-        (tuple_type
-          (type
-            (identifier))
-          (type
-            (identifier))))
-      (block))))
+      body: (block))))

@@ -1,0 +1,271 @@
+====================
+Semantic declaration fields
+====================
+
+package semantic_fields
+
+import fmt "core:fmt"
+import {"core:mem", runtime}
+
+@(private)
+Pair :: struct($T: typeid) #align 16 where size_of(T) > 0 {
+    left, right: T,
+}
+
+Color :: enum u8 {
+    Red = 1,
+    Green,
+}
+
+Maybe :: union($T: typeid) #no_nil {
+    T,
+    int,
+}
+
+Flags :: bit_field u16 {
+    enabled: bool | 1,
+}
+
+handlers :: proc {first_handler, second_handler}
+
+FIRST, SECOND :: 1, 2
+Int_Type :: #type int
+LIMIT : int : 10
+first, second := 1, 2
+typed, other: int = 3, 4
+declared: int
+
+---
+
+(source_file
+  (package_declaration
+    name: (identifier))
+  (import_declaration
+    alias: (identifier)
+    path: (string
+      (string_content)))
+  (import_declaration
+    path: (string
+      (string_content))
+    path: (identifier))
+  (struct_declaration
+    (attributes
+      (attribute
+        (identifier)))
+    name: (identifier)
+    parameters: (polymorphic_parameters
+      (identifier)
+      (type
+        (identifier)))
+    tag: (tag)
+    (number)
+    constraints: (where_clause
+      (binary_expression
+        left: (call_expression
+          function: (identifier)
+          argument: (identifier))
+        right: (number)))
+    member: (field
+      (identifier)
+      (identifier)
+      (type
+        (identifier))))
+  (enum_declaration
+    name: (identifier)
+    type: (type
+      (identifier))
+    (identifier)
+    (number)
+    (identifier))
+  (union_declaration
+    name: (identifier)
+    parameters: (polymorphic_parameters
+      (identifier)
+      (type
+        (identifier)))
+    tag: (tag)
+    member: (type
+      (identifier))
+    member: (type
+      (identifier)))
+  (bit_field_declaration
+    name: (identifier)
+    type: (type
+      (identifier))
+    (identifier)
+    (type
+      (identifier))
+    (number))
+  (overloaded_procedure_declaration
+    name: (identifier)
+    value: (identifier)
+    value: (identifier))
+  (const_declaration
+    name: (identifier)
+    name: (identifier)
+    value: (number)
+    value: (number))
+  (const_declaration
+    name: (identifier)
+    (tag)
+    value: (type
+      (identifier)))
+  (const_type_declaration
+    name: (identifier)
+    type: (type
+      (identifier))
+    value: (number))
+  (variable_declaration
+    name: (identifier)
+    name: (identifier)
+    value: (number)
+    value: (number))
+  (var_declaration
+    name: (identifier)
+    name: (identifier)
+    type: (type
+      (identifier))
+    value: (number)
+    value: (number))
+  (var_declaration
+    name: (identifier)
+    type: (type
+      (identifier))))
+
+====================
+Procedure signatures and bodies
+====================
+
+@(private)
+compute :: #force_inline proc "contextless" (
+    left: int,
+    right := 1,
+) -> (sum: int, ok: bool) where left > 0 #no_bounds_check {
+    return left + right, true
+}
+
+Callback :: proc "c" (value: int) -> bool
+
+foreign_api :: proc(input: int) -> int ---
+
+accept_callback :: proc(callback: proc "c" (value: int) -> bool) {}
+
+make_callback :: proc() -> proc(value: int) -> bool {
+    return proc(value: int) -> bool {
+        return value > 0
+    }
+}
+
+---
+
+(source_file
+  (procedure_declaration
+    (attributes
+      (attribute
+        (identifier)))
+    name: (identifier)
+    tag: (tag)
+    value: (procedure
+      signature: (procedure_signature
+        calling_convention: (calling_convention)
+        parameters: (parameters
+          (parameter
+            (identifier)
+            (type
+              (identifier)))
+          (default_parameter
+            (identifier)
+            (number)))
+        result: (type
+          (tuple_type
+            (named_type
+              (identifier)
+              (type
+                (identifier)))
+            (named_type
+              (identifier)
+              (type
+                (identifier)))))
+        constraints: (where_clause
+          (binary_expression
+            left: (identifier)
+            right: (number)))
+        tag: (tag))
+      body: (block
+        (return_statement
+          (binary_expression
+            left: (identifier)
+            right: (identifier))
+          (boolean)))))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        calling_convention: (calling_convention)
+        parameters: (parameters
+          (parameter
+            (identifier)
+            (type
+              (identifier))))
+        result: (type
+          (identifier)))))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters
+          (parameter
+            (identifier)
+            (type
+              (identifier))))
+        result: (type
+          (identifier)))
+      body: (uninitialized)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters
+          (parameter
+            (identifier)
+            (type
+              (procedure_type
+                calling_convention: (calling_convention)
+                parameters: (parameters
+                  (parameter
+                    (identifier)
+                    (type
+                      (identifier))))
+                result: (type
+                  (identifier)))))))
+      body: (block)))
+  (procedure_declaration
+    name: (identifier)
+    value: (procedure
+      signature: (procedure_signature
+        parameters: (parameters)
+        result: (type
+          (procedure_type
+            parameters: (parameters
+              (parameter
+                (identifier)
+                (type
+                  (identifier))))
+            result: (type
+              (identifier)))))
+      body: (block
+        (return_statement
+          (procedure
+            signature: (procedure_signature
+              parameters: (parameters
+                (parameter
+                  (identifier)
+                  (type
+                    (identifier))))
+              result: (type
+                (identifier)))
+            body: (block
+              (return_statement
+                (binary_expression
+                  left: (identifier)
+                  right: (number))))))))))
