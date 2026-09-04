@@ -83,6 +83,12 @@ module.exports = grammar({
       '}',
     )),
 
+    declaration_block: $ => seq(
+      '{',
+      sep($.declaration, $._separator),
+      '}',
+    ),
+
     tagged_block: $ => seq($.tag, $.block),
 
     declaration: $ => choice(
@@ -100,7 +106,7 @@ module.exports = grammar({
       $.const_declaration,
       $.const_type_declaration,
       $.foreign_block,
-      $.when_statement,
+      $.conditional_declaration,
       $._expression_no_tag,
     ),
 
@@ -271,6 +277,13 @@ module.exports = grammar({
       optional($.attributes),
       'foreign',
       optional($.identifier),
+      $.declaration_block,
+    ),
+
+    foreign_statement: $ => seq(
+      optional($.attributes),
+      'foreign',
+      optional($.identifier),
       $.block,
     ),
 
@@ -372,7 +385,7 @@ module.exports = grammar({
       $.return_statement,
       $._expression_no_tag,
       $.var_declaration,
-      $.foreign_block,
+      $.foreign_statement,
       $.tagged_block,
       $.block,
     )),
@@ -436,6 +449,26 @@ module.exports = grammar({
       repeat($.else_when_clause),
       optional($.else_clause),
     )),
+
+    conditional_declaration: $ => prec.right(seq(
+      'when',
+      $.expression,
+      $.declaration_block,
+      repeat($.else_when_declaration_clause),
+      optional($.else_declaration_clause),
+    )),
+
+    else_when_declaration_clause: $ => seq(
+      'else',
+      'when',
+      $.expression,
+      $.declaration_block,
+    ),
+
+    else_declaration_clause: $ => seq(
+      'else',
+      $.declaration_block,
+    ),
 
     else_when_clause: $ => seq(
       'else',
