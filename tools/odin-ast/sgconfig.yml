@@ -1,0 +1,7 @@
+customLanguages:
+  odin:
+    libraryPath: parsers/odin.so
+    extensions:
+      - odin
+    outlineRules: outline/odin.yml
+    expandoChar: _

@@ -4,7 +4,6 @@ set -euo pipefail
 script_dir="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repo_root="$(CDPATH= cd -- "$script_dir/../.." && pwd)"
 fixture="$script_dir/fixtures/navigation.odin"
-ast_grep_bin="${ODIN_AST_GREP:-ast-grep}"
 test_root="$(mktemp -d "${TMPDIR:-/tmp}/odin-ast-test.XXXXXX")"
 
 log() {
@@ -16,18 +15,48 @@ cleanup() {
 }
 trap cleanup EXIT
 
-ODIN_AST_CONFIG_DIR="$test_root/config" \
-ODIN_AST_BIN_DIR="$test_root/bin" \
-ODIN_AST_GREP="$ast_grep_bin" \
-    "$script_dir/install"
-
-odin_ast="$test_root/bin/odin-ast"
-config="$test_root/config/sgconfig.yml"
 case "$(uname -s)" in
-    MINGW* | MSYS* | CYGWIN*) tree_sitter_name=tree-sitter.exe ;;
-    *) tree_sitter_name=tree-sitter ;;
+    MINGW* | MSYS* | CYGWIN*)
+        tree_sitter_name=tree-sitter.exe
+        odin_ast_name=odin-ast.exe
+        ;;
+    *)
+        tree_sitter_name=tree-sitter
+        odin_ast_name=odin-ast
+        ;;
 esac
 tree_sitter_bin="${TREE_SITTER:-$repo_root/node_modules/tree-sitter-cli/$tree_sitter_name}"
+
+if [[ ! -x "$tree_sitter_bin" || ! -d "$repo_root/node_modules/tree-sitter" ]]; then
+    log "installing development dependencies"
+    npm ci --prefix "$repo_root"
+fi
+
+log "checking committed generated parser files"
+generated_files=(src/parser.c src/grammar.json src/node-types.json)
+install -d "$test_root/generated"
+for generated_file in "${generated_files[@]}"; do
+    install -m 0644 \
+        "$repo_root/$generated_file" \
+        "$test_root/generated/$(basename "$generated_file")"
+done
+"$tree_sitter_bin" generate "$repo_root/grammar.js"
+for generated_file in "${generated_files[@]}"; do
+    if ! cmp -s \
+        "$repo_root/$generated_file" \
+        "$test_root/generated/$(basename "$generated_file")"; then
+        echo "odin-ast test: $generated_file is not current; run tree-sitter generate" >&2
+        exit 1
+    fi
+done
+log "committed generated parser files are current"
+
+ODIN_AST_CONFIG_DIR="$test_root/config" \
+ODIN_AST_BIN_DIR="$test_root/bin" \
+    "$script_dir/install"
+
+odin_ast="$test_root/bin/$odin_ast_name"
+config="$test_root/config/sgconfig.yml"
 
 log "running Tree-sitter corpus tests"
 (
@@ -47,7 +76,7 @@ log "grammar lint checks passed"
 log "running odin-ast navigation tests"
 
 run_odin_ast() {
-    ODIN_AST_CONFIG="$config" ODIN_AST_GREP="$ast_grep_bin" "$odin_ast" "$@"
+    ODIN_AST_CONFIG="$config" "$odin_ast" "$@"
 }
 
 run_odin_ast outline --json=compact "$fixture" >"$test_root/outline.json"
