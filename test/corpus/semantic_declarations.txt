@@ -57,8 +57,10 @@ declared: int
       name: (identifier)
       type: (type
         (identifier)))
-    tag: (tag)
-    (number)
+    tag: (directive
+      (tag
+        name: (identifier))
+      (number))
     constraints: (where_clause
       (binary_expression
         left: (call_expression
@@ -85,7 +87,9 @@ declared: int
       name: (identifier)
       type: (type
         (identifier)))
-    tag: (tag)
+    tag: (directive
+      (tag
+        name: (identifier)))
     member: (type
       (identifier))
     member: (type
@@ -167,7 +171,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
       (attribute
         (identifier)))
     name: (identifier)
-    tag: (tag)
+    tag: (tag
+      name: (identifier))
     value: (procedure
       signature: (procedure_signature
         calling_convention: (calling_convention)
@@ -193,7 +198,8 @@ make_callback :: proc() -> proc(value: int) -> bool {
           (binary_expression
             left: (identifier)
             right: (number)))
-        tag: (tag))
+      tag: (tag
+        name: (identifier)))
       body: (block
         (return_statement
           (binary_expression

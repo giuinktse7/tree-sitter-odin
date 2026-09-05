@@ -187,10 +187,12 @@ Print one exact declaration without reading the entire file:
 odin-ast show path/to/file.odin Symbol_Name
 ```
 
-Forward another command to ast-grep with the installed Odin configuration:
+Forward any other ast-grep command with the installed Odin configuration. The
+first argument after `odin-ast` is the ast-grep command:
 
 ```sh
-odin-ast run --kind procedure_declaration path/to/source
+odin-ast AST_GREP_COMMAND [ARGS...]
+odin-ast run --pattern '$NAME :: $VALUE' --lang odin path/to/source
 ```
 
 Run `odin-ast --help` to display the command summary.

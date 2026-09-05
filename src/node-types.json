@@ -4,35 +4,11 @@
     "named": true,
     "subtypes": [
       {
-        "type": "?",
-        "named": false
-      },
-      {
-        "type": "address",
-        "named": true
-      },
-      {
-        "type": "array_type",
-        "named": true
-      },
-      {
-        "type": "binary_expression",
-        "named": true
-      },
-      {
         "type": "bit_field_declaration",
         "named": true
       },
       {
         "type": "build_tag",
-        "named": true
-      },
-      {
-        "type": "call_expression",
-        "named": true
-      },
-      {
-        "type": "cast_expression",
         "named": true
       },
       {
@@ -48,7 +24,7 @@
         "named": true
       },
       {
-        "type": "distinct_type",
+        "type": "directive_declaration",
         "named": true
       },
       {
@@ -60,47 +36,7 @@
         "named": true
       },
       {
-        "type": "identifier",
-        "named": true
-      },
-      {
         "type": "import_declaration",
-        "named": true
-      },
-      {
-        "type": "in_expression",
-        "named": true
-      },
-      {
-        "type": "index_expression",
-        "named": true
-      },
-      {
-        "type": "literal",
-        "named": true
-      },
-      {
-        "type": "map_type",
-        "named": true
-      },
-      {
-        "type": "matrix_type",
-        "named": true
-      },
-      {
-        "type": "member_expression",
-        "named": true
-      },
-      {
-        "type": "or_break_expression",
-        "named": true
-      },
-      {
-        "type": "or_continue_expression",
-        "named": true
-      },
-      {
-        "type": "or_return_expression",
         "named": true
       },
       {
@@ -112,43 +48,11 @@
         "named": true
       },
       {
-        "type": "parenthesized_expression",
-        "named": true
-      },
-      {
-        "type": "pointer_type",
-        "named": true
-      },
-      {
         "type": "procedure_declaration",
         "named": true
       },
       {
-        "type": "range_expression",
-        "named": true
-      },
-      {
-        "type": "selector_call_expression",
-        "named": true
-      },
-      {
-        "type": "slice_expression",
-        "named": true
-      },
-      {
         "type": "struct_declaration",
-        "named": true
-      },
-      {
-        "type": "ternary_expression",
-        "named": true
-      },
-      {
-        "type": "type_assertion_expression",
-        "named": true
-      },
-      {
-        "type": "unary_expression",
         "named": true
       },
       {
@@ -161,10 +65,6 @@
       },
       {
         "type": "variable_declaration",
-        "named": true
-      },
-      {
-        "type": "variadic_expression",
         "named": true
       }
     ]
@@ -262,6 +162,10 @@
         "named": true
       },
       {
+        "type": "struct_type",
+        "named": true
+      },
+      {
         "type": "tag",
         "named": true
       },
@@ -275,6 +179,10 @@
       },
       {
         "type": "unary_expression",
+        "named": true
+      },
+      {
+        "type": "union_type",
         "named": true
       },
       {
@@ -390,6 +298,10 @@
         "named": true
       },
       {
+        "type": "directive_statement",
+        "named": true
+      },
+      {
         "type": "distinct_type",
         "named": true
       },
@@ -498,6 +410,10 @@
         "named": true
       },
       {
+        "type": "struct_type",
+        "named": true
+      },
+      {
         "type": "switch_statement",
         "named": true
       },
@@ -519,6 +435,10 @@
       },
       {
         "type": "union_declaration",
+        "named": true
+      },
+      {
+        "type": "union_type",
         "named": true
       },
       {
@@ -575,18 +495,28 @@
             "named": true
           }
         ]
+      },
+      "element": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "polymorphic_type",
+            "named": true
+          },
+          {
+            "type": "type",
+            "named": true
+          }
+        ]
       }
     },
     "children": {
       "multiple": true,
-      "required": true,
+      "required": false,
       "types": [
         {
           "type": "expression",
-          "named": true
-        },
-        {
-          "type": "type",
           "named": true
         }
       ]
@@ -943,6 +873,10 @@
           "named": true
         },
         {
+          "type": "enum_type",
+          "named": true
+        },
+        {
           "type": "expression",
           "named": true
         },
@@ -1010,11 +944,11 @@
             "named": true
           },
           {
-            "type": "procedure",
+            "type": "named_argument",
             "named": true
           },
           {
-            "type": "struct_type",
+            "type": "procedure",
             "named": true
           }
         ]
@@ -1112,6 +1046,10 @@
             "named": true
           },
           {
+            "type": "struct_type",
+            "named": true
+          },
+          {
             "type": "tag",
             "named": true
           },
@@ -1128,21 +1066,15 @@
             "named": true
           },
           {
+            "type": "union_type",
+            "named": true
+          },
+          {
             "type": "variadic_expression",
             "named": true
           }
         ]
       }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "expression",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -1480,6 +1412,132 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "directive",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          },
+          {
+            "type": "named_argument",
+            "named": true
+          },
+          {
+            "type": "procedure",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        },
+        {
+          "type": "tag",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "directive_declaration",
+    "named": true,
+    "fields": {
+      "argument": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          },
+          {
+            "type": "named_argument",
+            "named": true
+          },
+          {
+            "type": "procedure",
+            "named": true
+          }
+        ]
+      },
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "tag",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "directive_statement",
+    "named": true,
+    "fields": {
+      "directive": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "#bounds_check",
+            "named": false
+          },
+          {
+            "type": "#no_bounds_check",
+            "named": false
+          },
+          {
+            "type": "#no_type_assert",
+            "named": false
+          },
+          {
+            "type": "#partial",
+            "named": false
+          },
+          {
+            "type": "#reverse",
+            "named": false
+          },
+          {
+            "type": "#type_assert",
+            "named": false
+          },
+          {
+            "type": "#unroll",
+            "named": false
+          }
+        ]
+      },
+      "statement": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "statement",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -1890,6 +1948,10 @@
             "named": true
           },
           {
+            "type": "struct_type",
+            "named": true
+          },
+          {
             "type": "tag",
             "named": true
           },
@@ -1903,6 +1965,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "union_type",
             "named": true
           },
           {
@@ -2205,6 +2271,10 @@
           "named": true
         },
         {
+          "type": "directive_statement",
+          "named": true
+        },
+        {
           "type": "for_statement",
           "named": true
         },
@@ -2326,6 +2396,40 @@
     }
   },
   {
+    "type": "named_argument",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          },
+          {
+            "type": "procedure",
+            "named": true
+          },
+          {
+            "type": "procedure_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "named_type",
     "named": true,
     "fields": {},
@@ -2334,11 +2438,7 @@
       "required": true,
       "types": [
         {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "literal",
+          "type": "expression",
           "named": true
         },
         {
@@ -2565,6 +2665,16 @@
     "type": "polymorphic_parameters",
     "named": true,
     "fields": {
+      "default": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      },
       "name": {
         "multiple": true,
         "required": true,
@@ -2590,20 +2700,43 @@
   {
     "type": "polymorphic_type",
     "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "type",
-          "named": true
-        }
-      ]
+    "fields": {
+      "argument": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "type",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "field_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "type",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -2870,11 +3003,11 @@
             "named": true
           },
           {
-            "type": "procedure",
+            "type": "named_argument",
             "named": true
           },
           {
-            "type": "struct_type",
+            "type": "procedure",
             "named": true
           }
         ]
@@ -2899,16 +3032,6 @@
           }
         ]
       }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "expression",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -3001,12 +3124,40 @@
     "type": "struct",
     "named": true,
     "fields": {
-      "capacity": {
+      "type": {
         "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "expression",
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "bit_field_type",
+            "named": true
+          },
+          {
+            "type": "enum_type",
+            "named": true
+          },
+          {
+            "type": "field_identifier",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "polymorphic_type",
+            "named": true
+          },
+          {
+            "type": "struct_type",
+            "named": true
+          },
+          {
+            "type": "union_type",
             "named": true
           }
         ]
@@ -3017,19 +3168,7 @@
       "required": false,
       "types": [
         {
-          "type": "expression",
-          "named": true
-        },
-        {
-          "type": "field_identifier",
-          "named": true
-        },
-        {
           "type": "struct_field",
-          "named": true
-        },
-        {
-          "type": "type",
           "named": true
         }
       ]
@@ -3084,26 +3223,18 @@
         "required": false,
         "types": [
           {
-            "type": "tag",
+            "type": "directive",
             "named": true
           }
         ]
       }
     },
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": false,
       "types": [
         {
           "type": "attributes",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "number",
           "named": true
         }
       ]
@@ -3192,15 +3323,11 @@
       "required": false,
       "types": [
         {
-          "type": "number",
+          "type": "directive",
           "named": true
         },
         {
           "type": "polymorphic_parameters",
-          "named": true
-        },
-        {
-          "type": "tag",
           "named": true
         }
       ]
@@ -3282,6 +3409,22 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "tag",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -3410,6 +3553,10 @@
             "named": true
           },
           {
+            "type": "struct_type",
+            "named": true
+          },
+          {
             "type": "ternary_expression",
             "named": true
           },
@@ -3419,6 +3566,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "union_type",
             "named": true
           },
           {
@@ -3656,11 +3807,11 @@
         ]
       },
       "tag": {
-        "multiple": false,
+        "multiple": true,
         "required": false,
         "types": [
           {
-            "type": "tag",
+            "type": "directive",
             "named": true
           }
         ]
@@ -3680,11 +3831,26 @@
   {
     "type": "union_type",
     "named": true,
-    "fields": {},
+    "fields": {
+      "tag": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "directive",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "polymorphic_parameters",
+          "named": true
+        },
         {
           "type": "type",
           "named": true
@@ -3817,7 +3983,7 @@
       },
       "type": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "type",
@@ -3861,6 +4027,16 @@
           }
         ]
       },
+      "tag": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "tag",
+            "named": true
+          }
+        ]
+      },
       "value": {
         "multiple": true,
         "required": true,
@@ -3877,15 +4053,11 @@
       }
     },
     "children": {
-      "multiple": true,
+      "multiple": false,
       "required": false,
       "types": [
         {
           "type": "attributes",
-          "named": true
-        },
-        {
-          "type": "tag",
           "named": true
         }
       ]
@@ -4016,7 +4188,51 @@
     "named": false
   },
   {
+    "type": "#",
+    "named": false
+  },
+  {
     "type": "#+",
+    "named": false
+  },
+  {
+    "type": "#bounds_check",
+    "named": false
+  },
+  {
+    "type": "#force_inline",
+    "named": false
+  },
+  {
+    "type": "#force_no_inline",
+    "named": false
+  },
+  {
+    "type": "#must_tail",
+    "named": false
+  },
+  {
+    "type": "#no_bounds_check",
+    "named": false
+  },
+  {
+    "type": "#no_type_assert",
+    "named": false
+  },
+  {
+    "type": "#partial",
+    "named": false
+  },
+  {
+    "type": "#reverse",
+    "named": false
+  },
+  {
+    "type": "#type_assert",
+    "named": false
+  },
+  {
+    "type": "#unroll",
     "named": false
   },
   {
@@ -4374,10 +4590,6 @@
   {
     "type": "switch",
     "named": false
-  },
-  {
-    "type": "tag",
-    "named": true
   },
   {
     "type": "transmute",

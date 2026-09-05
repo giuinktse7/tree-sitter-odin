@@ -97,7 +97,7 @@
 
 (named_type (identifier) @parameter)
 
-(call_expression argument: (identifier) @parameter "=")
+(named_argument name: (identifier) @parameter)
 
 ; Functions
 

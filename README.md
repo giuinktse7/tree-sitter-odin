@@ -32,7 +32,7 @@ odin-ast outline path/to/file.odin
 odin-ast map path/to/source
 odin-ast find Symbol_Name path/to/source
 odin-ast show path/to/file.odin Symbol_Name
-odin-ast run --kind procedure_declaration path/to/source
+odin-ast run --pattern '$NAME :: $VALUE' --lang odin path/to/source
 ```
 
 `map`, `find`, and `show` include private declarations. `find` returns every

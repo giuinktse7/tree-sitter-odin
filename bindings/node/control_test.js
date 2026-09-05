@@ -3,10 +3,14 @@ const { test } = require('node:test');
 const Parser = require('tree-sitter');
 const Odin = require('.');
 
-function parse(body) {
+function parseSource(source) {
   const parser = new Parser();
   parser.setLanguage(Odin);
-  return parser.parse(`run :: proc() {\n${body}\n}`).rootNode;
+  return parser.parse(source).rootNode;
+}
+
+function parse(body) {
+  return parseSource(`run :: proc() {\n${body}\n}`);
 }
 
 test('selector calls expose receiver, method and arguments', () => {
@@ -89,6 +93,26 @@ test('dynamic arrays accept capacity expressions', () => {
   assert.equal(parse('buffer: [4; 64]byte').hasError, true);
 });
 
+test('untyped declarations allow whitespace between colon and equals', () => {
+  for (const declaration of ['value: = source', 'first, second: = get_values()']) {
+    const root = parse(declaration);
+    assert.equal(root.hasError, false, declaration);
+    const node = root.descendantsOfType('var_declaration')[0];
+    assert.ok(node, declaration);
+    assert.equal(node.childForFieldName('type'), null, declaration);
+    assert.ok(node.childrenForFieldName('value').length > 0, declaration);
+  }
+  assert.equal(parse('value: =').hasError, true);
+});
+
+test('polymorphic struct parameters accept defaults', () => {
+  const root = parse('Channel :: struct($T: typeid, $D: Direction = Direction.Both, $N: int = 4) {}');
+  assert.equal(root.hasError, false);
+  const parameters = root.descendantsOfType('polymorphic_parameters')[0];
+  assert.deepEqual(parameters.childrenForFieldName('name').map(node => node.text), ['T', 'D', 'N']);
+  assert.deepEqual(parameters.childrenForFieldName('default').map(node => node.text), ['Direction.Both', '4']);
+});
+
 test('short declarations require names in blocks and control headers', () => {
   assert.equal(parse('callback := #force_inline proc(value: int) -> int { return value }').hasError, false);
   for (const declaration of ['value := get()', 'value, ok := get()']) {
@@ -113,6 +137,102 @@ test('float tokens preserve separators and adjacent arithmetic operators', () =>
     assert.equal(root.hasError, false, value);
     assert.equal(root.descendantsOfType('float').length, 1, value);
     assert.equal(root.descendantsOfType('member_expression').length, 0, value);
+  }
+});
+
+test('integer literals accept separators in every supported base', () => {
+  for (const value of ['1_024', '0d1_024', '0zA_B', '0xCA_FE', '0o0_000_100', '0o_100', '0b1010_0101']) {
+    const root = parse(`result := ${value}`);
+    assert.equal(root.hasError, false, value);
+    assert.equal(root.descendantsOfType('number')[0].text, value);
+  }
+});
+
+test('negative literals use unary expression nodes', () => {
+  for (const value of ['-1', '-1.5']) {
+    const root = parse(`result := ${value}`);
+    assert.equal(root.hasError, false, value);
+    const unary = root.descendantsOfType('unary_expression')[0];
+    assert.ok(unary, value);
+    assert.equal(unary.childForFieldName('operator').text, '-');
+  }
+});
+
+test('hexadecimal bit-pattern floats remain float tokens', () => {
+  for (const value of ['0h3f800000', '0h3ff00000_00000000']) {
+    const root = parse(`result := ${value}`);
+    assert.equal(root.hasError, false, value);
+    assert.equal(root.descendantsOfType('float')[0].text, value);
+  }
+});
+
+test('named arguments expose names and values separately', () => {
+  const root = parse('result := create(count = 4, allocator = context.allocator)');
+  assert.equal(root.hasError, false);
+  const arguments = root.descendantsOfType('named_argument');
+  assert.deepEqual(arguments.map(node => node.childForFieldName('name').text), ['count', 'allocator']);
+  assert.deepEqual(arguments.map(node => node.childForFieldName('value').text), ['4', 'context.allocator']);
+});
+
+test('multiline strings accept interpreted and raw delimiters', () => {
+  for (const value of ['"""\ntext \\"quoted\\"\n"""', '```\nraw \\ text\n```']) {
+    const root = parse(`result := ${value}`);
+    assert.equal(root.hasError, false, value);
+    assert.equal(root.descendantsOfType('string').length, 1);
+  }
+});
+
+test('type arguments stay inside array types and compound literals', () => {
+  const root = parse(`
+    entries := make([dynamic]Entry(^[]byte), 0)
+    append(&entries, Entry(^[]byte){value = nil})
+    vector := #simd[32]i8{}
+  `);
+  assert.equal(root.hasError, false);
+  const array = root.descendantsOfType('array_type')[0];
+  assert.equal(array.descendantsOfType('polymorphic_type')[0].text, 'Entry(^[]byte)');
+  assert.deepEqual(root.descendantsOfType('struct').map(node => node.childForFieldName('type').text), [
+    'Entry(^[]byte)',
+    '#simd[32]i8',
+  ]);
+});
+
+test('qualified polymorphic and conditional types remain types', () => {
+  const root = parse(`
+    items: collections.Array(Item, 4)
+    result: int = -1
+    Selected :: int when enabled else struct {}
+    Flags :: bit_set[enum {Read, Write}]
+  `);
+  assert.equal(root.hasError, false);
+  assert.equal(root.descendantsOfType('polymorphic_type')[0].text, 'collections.Array(Item, 4)');
+  assert.equal(root.descendantsOfType('unary_expression')[0].text, '-1');
+});
+
+test('directives attach to their syntactic operands', () => {
+  const root = parse(`
+    loop: #reverse for value in values {}
+    defer #no_bounds_check for i in values {}
+    value := union #shared_nil {int, string}{}
+    Aligned :: struct #align(align_of(uint)) {}
+  `);
+  assert.equal(root.hasError, false);
+  assert.equal(root.descendantsOfType('directive_statement').length, 2);
+  assert.equal(root.descendantsOfType('union_type')[0].childrenForFieldName('tag')[0].text, '#shared_nil');
+});
+
+test('file scope accepts directives but rejects arbitrary expressions', () => {
+  const directive = parseSource('package example\n#assert(true)');
+  assert.equal(directive.hasError, false);
+  assert.equal(directive.descendantsOfType('directive_declaration').length, 1);
+  assert.equal(parseSource('package example\nleft + right').hasError, true);
+});
+
+test('line continuations accept LF and CRLF', () => {
+  for (const newline of ['\n', '\r\n']) {
+    const root = parse(`result := left \\${newline} + right`);
+    assert.equal(root.hasError, false, JSON.stringify(newline));
+    assert.equal(root.descendantsOfType('binary_expression').length, 1);
   }
 });
 

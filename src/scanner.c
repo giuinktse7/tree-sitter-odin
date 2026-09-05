@@ -10,6 +10,7 @@ enum {
     BACKSLASH,
     NL_COMMA,
     FLOAT,
+    MULTILINE_STRING,
     BLOCK_COMMENT,
     BRACKET,
     QUOTE,
@@ -48,7 +49,30 @@ bool tree_sitter_odin_external_scanner_scan(void *payload, TSLexer *lexer, const
         bool found_number_before_decimal = false;
         bool found_number_after_decimal = false;
         bool found_number_after_expontent = false;
-        for (int i = 0;; i++) {
+
+        if (lexer->lookahead == '0') {
+            advance(lexer);
+            found_number_before_decimal = true;
+            if (lexer->lookahead == 'h') {
+                advance(lexer);
+                unsigned digit_count = 0;
+                while ((lexer->lookahead <= 255 && isxdigit(lexer->lookahead)) ||
+                       lexer->lookahead == '_') {
+                    if (lexer->lookahead != '_') {
+                        digit_count++;
+                    }
+                    advance(lexer);
+                }
+                if (digit_count == 4 || digit_count == 8 || digit_count == 16) {
+                    lexer->result_symbol = FLOAT;
+                    lexer->mark_end(lexer);
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        for (;;) {
             switch (lexer->lookahead) {
                 case '.':
                     if ((found_decimal || found_exponent) &&
@@ -100,7 +124,7 @@ bool tree_sitter_odin_external_scanner_scan(void *payload, TSLexer *lexer, const
                     break;
                 case '+':
                 case '-':
-                    if (i == 0 || (found_exponent && !found_number_after_expontent)) {
+                    if (found_exponent && !found_number_after_expontent) {
                         advance(lexer);
                     } else if ((found_decimal || found_exponent) &&
                                (found_number_after_decimal || found_number_before_decimal)) {
@@ -230,6 +254,9 @@ newline:
 backslash:
     if (valid_symbols[BACKSLASH] && lexer->lookahead == '\\') {
         advance(lexer);
+        if (lexer->lookahead == '\r') {
+            advance(lexer);
+        }
         if (lexer->lookahead == '\n') {
             advance(lexer);
             while (iswspace(lexer->lookahead)) {
@@ -242,6 +269,44 @@ backslash:
 
     while (iswspace(lexer->lookahead)) {
         skip(lexer);
+    }
+
+    if (valid_symbols[MULTILINE_STRING] &&
+        (lexer->lookahead == '"' || lexer->lookahead == '`')) {
+        int quote = lexer->lookahead;
+        advance(lexer);
+        if (lexer->lookahead != quote) {
+            return false;
+        }
+        advance(lexer);
+        if (lexer->lookahead != quote) {
+            return false;
+        }
+        advance(lexer);
+
+        unsigned quote_count = 0;
+        for (;;) {
+            if (lexer->lookahead == '\0') {
+                return false;
+            }
+            if (lexer->lookahead == quote) {
+                quote_count++;
+                advance(lexer);
+                if (quote_count == 3) {
+                    lexer->result_symbol = MULTILINE_STRING;
+                    return true;
+                }
+                continue;
+            }
+            quote_count = 0;
+            if (quote == '"' && lexer->lookahead == '\\') {
+                advance(lexer);
+                if (lexer->lookahead == '\0') {
+                    return false;
+                }
+            }
+            advance(lexer);
+        }
     }
 
     if (valid_symbols[BLOCK_COMMENT] && lexer->lookahead == '/') {
