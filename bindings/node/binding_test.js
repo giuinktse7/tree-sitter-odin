@@ -48,7 +48,7 @@ run :: proc(first, second: int) {
   );
   assert.equal(assignment.childForFieldName("operator").text, "=");
 
-  const member = body.namedChild(1).childForFieldName("right");
+  const member = body.namedChild(1).childForFieldName("value");
   assert.equal(member.childForFieldName("operand").text, "object");
   assert.equal(member.childForFieldName("field").text, "member");
 });

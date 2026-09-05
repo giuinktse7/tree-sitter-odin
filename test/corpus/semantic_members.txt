@@ -203,57 +203,57 @@ exercise :: proc() {
         (update_statement
           left: (identifier)
           right: (identifier))
-        (assignment_statement
-          left: (identifier)
-          right: (member_expression
+        (variable_declaration
+          name: (identifier)
+          value: (member_expression
             operand: (identifier)
             field: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (index_expression
+        (variable_declaration
+          name: (identifier)
+          value: (index_expression
             operand: (identifier)
             index: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (index_expression
+        (variable_declaration
+          name: (identifier)
+          value: (index_expression
             operand: (identifier)
             index: (identifier)
             index: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (slice_expression
+        (variable_declaration
+          name: (identifier)
+          value: (slice_expression
             operand: (identifier)
             start: (identifier)
             end: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (range_expression
+        (variable_declaration
+          name: (identifier)
+          value: (range_expression
             start: (identifier)
             end: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (range_expression
+        (variable_declaration
+          name: (identifier)
+          value: (range_expression
             start: (identifier)
             end: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (cast_expression
+        (variable_declaration
+          name: (identifier)
+          value: (cast_expression
             type: (type
               (identifier))
             operand: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (cast_expression
+        (variable_declaration
+          name: (identifier)
+          value: (cast_expression
             type: (type
               (identifier))
             operand: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (cast_expression
+        (variable_declaration
+          name: (identifier)
+          value: (cast_expression
             operand: (identifier)))
-        (assignment_statement
-          left: (identifier)
-          right: (cast_expression
+        (variable_declaration
+          name: (identifier)
+          value: (cast_expression
             type: (pointer_type
               (type
                 (identifier)))

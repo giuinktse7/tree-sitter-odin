@@ -33,9 +33,7 @@
 
 (var_declaration name: (identifier) @definition.var)
 
-(assignment_statement
-  left: (identifier) @definition.var
-  operator: ":=")
+(for_statement binding: (identifier) @definition.var)
 
 (const_declaration name: (identifier) @definition.constant)
 

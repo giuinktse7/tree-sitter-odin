@@ -165,6 +165,8 @@
 
 (member_expression field: (identifier) @field)
 
+(selector_call_expression function: (identifier) @function.call)
+
 (struct_member name: (identifier) @field)
 
 (struct_field (identifier) @field "="?)

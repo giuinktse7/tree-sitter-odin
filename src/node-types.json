@@ -12,6 +12,10 @@
         "named": true
       },
       {
+        "type": "array_type",
+        "named": true
+      },
+      {
         "type": "binary_expression",
         "named": true
       },
@@ -112,6 +116,10 @@
         "named": true
       },
       {
+        "type": "pointer_type",
+        "named": true
+      },
+      {
         "type": "procedure_declaration",
         "named": true
       },
@@ -133,6 +141,10 @@
       },
       {
         "type": "ternary_expression",
+        "named": true
+      },
+      {
+        "type": "type_assertion_expression",
         "named": true
       },
       {
@@ -167,6 +179,10 @@
       },
       {
         "type": "address",
+        "named": true
+      },
+      {
+        "type": "array_type",
         "named": true
       },
       {
@@ -230,6 +246,10 @@
         "named": true
       },
       {
+        "type": "pointer_type",
+        "named": true
+      },
+      {
         "type": "range_expression",
         "named": true
       },
@@ -247,6 +267,10 @@
       },
       {
         "type": "ternary_expression",
+        "named": true
+      },
+      {
+        "type": "type_assertion_expression",
         "named": true
       },
       {
@@ -319,6 +343,10 @@
       },
       {
         "type": "address",
+        "named": true
+      },
+      {
+        "type": "array_type",
         "named": true
       },
       {
@@ -442,6 +470,10 @@
         "named": true
       },
       {
+        "type": "pointer_type",
+        "named": true
+      },
+      {
         "type": "procedure_declaration",
         "named": true
       },
@@ -478,6 +510,10 @@
         "named": true
       },
       {
+        "type": "type_assertion_expression",
+        "named": true
+      },
+      {
         "type": "unary_expression",
         "named": true
       },
@@ -495,6 +531,10 @@
       },
       {
         "type": "var_declaration",
+        "named": true
+      },
+      {
+        "type": "variable_declaration",
         "named": true
       },
       {
@@ -525,10 +565,21 @@
   {
     "type": "array_type",
     "named": true,
-    "fields": {},
+    "fields": {
+      "capacity": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "expression",
@@ -559,10 +610,6 @@
         "multiple": false,
         "required": true,
         "types": [
-          {
-            "type": ":=",
-            "named": false
-          },
           {
             "type": "=",
             "named": false
@@ -768,7 +815,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -959,15 +1006,7 @@
         "required": false,
         "types": [
           {
-            "type": "array_type",
-            "named": true
-          },
-          {
             "type": "expression",
-            "named": true
-          },
-          {
-            "type": "pointer_type",
             "named": true
           },
           {
@@ -990,6 +1029,10 @@
           },
           {
             "type": "address",
+            "named": true
+          },
+          {
+            "type": "array_type",
             "named": true
           },
           {
@@ -1053,6 +1096,10 @@
             "named": true
           },
           {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
             "type": "range_expression",
             "named": true
           },
@@ -1070,6 +1117,10 @@
           },
           {
             "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "type_assertion_expression",
             "named": true
           },
           {
@@ -1225,7 +1276,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -1245,19 +1296,11 @@
         "required": true,
         "types": [
           {
-            "type": "array_type",
-            "named": true
-          },
-          {
             "type": "bit_set_type",
             "named": true
           },
           {
             "type": "expression",
-            "named": true
-          },
-          {
-            "type": "pointer_type",
             "named": true
           },
           {
@@ -1291,7 +1334,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -1520,6 +1563,14 @@
           {
             "type": "assignment_statement",
             "named": true
+          },
+          {
+            "type": "var_declaration",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
           }
         ]
       }
@@ -1587,7 +1638,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -1740,12 +1791,122 @@
     "type": "for_statement",
     "named": true,
     "fields": {
+      "binding": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
       "condition": {
         "multiple": false,
         "required": false,
         "types": [
           {
-            "type": "expression",
+            "type": "?",
+            "named": false
+          },
+          {
+            "type": "address",
+            "named": true
+          },
+          {
+            "type": "array_type",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "cast_expression",
+            "named": true
+          },
+          {
+            "type": "distinct_type",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "index_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "map_type",
+            "named": true
+          },
+          {
+            "type": "matrix_type",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "or_break_expression",
+            "named": true
+          },
+          {
+            "type": "or_continue_expression",
+            "named": true
+          },
+          {
+            "type": "or_return_expression",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
+            "type": "range_expression",
+            "named": true
+          },
+          {
+            "type": "selector_call_expression",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
+            "named": true
+          },
+          {
+            "type": "tag",
+            "named": true
+          },
+          {
+            "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "type_assertion_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "variadic_expression",
             "named": true
           }
         ]
@@ -1779,6 +1940,20 @@
           {
             "type": "var_declaration",
             "named": true
+          },
+          {
+            "type": "variable_declaration",
+            "named": true
+          }
+        ]
+      },
+      "iterable": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
           }
         ]
       },
@@ -1796,16 +1971,6 @@
           }
         ]
       }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "expression",
-          "named": true
-        }
-      ]
     }
   },
   {
@@ -1918,6 +2083,10 @@
           },
           {
             "type": "var_declaration",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
             "named": true
           }
         ]
@@ -2036,11 +2205,11 @@
           "named": true
         },
         {
-          "type": "expression",
+          "type": "for_statement",
           "named": true
         },
         {
-          "type": "for_statement",
+          "type": "identifier",
           "named": true
         },
         {
@@ -2139,7 +2308,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -2244,7 +2413,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -2476,7 +2645,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -2692,7 +2861,35 @@
     "type": "selector_call_expression",
     "named": true,
     "fields": {
+      "argument": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          },
+          {
+            "type": "procedure",
+            "named": true
+          },
+          {
+            "type": "struct_type",
+            "named": true
+          }
+        ]
+      },
       "function": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "operand": {
         "multiple": false,
         "required": true,
         "types": [
@@ -2704,11 +2901,11 @@
       }
     },
     "children": {
-      "multiple": false,
-      "required": true,
+      "multiple": true,
+      "required": false,
       "types": [
         {
-          "type": "call_expression",
+          "type": "expression",
           "named": true
         }
       ]
@@ -2803,7 +3000,18 @@
   {
     "type": "struct",
     "named": true,
-    "fields": {},
+    "fields": {
+      "capacity": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": true,
       "required": false,
@@ -2856,7 +3064,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -3007,15 +3215,7 @@
         "required": false,
         "types": [
           {
-            "type": "array_type",
-            "named": true
-          },
-          {
             "type": "expression",
-            "named": true
-          },
-          {
-            "type": "pointer_type",
             "named": true
           }
         ]
@@ -3049,11 +3249,25 @@
             "named": false
           },
           {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      },
+      "initializer": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
             "type": "assignment_statement",
             "named": true
           },
           {
-            "type": "expression",
+            "type": "var_declaration",
+            "named": true
+          },
+          {
+            "type": "variable_declaration",
             "named": true
           }
         ]
@@ -3113,6 +3327,10 @@
           },
           {
             "type": "address",
+            "named": true
+          },
+          {
+            "type": "array_type",
             "named": true
           },
           {
@@ -3176,6 +3394,10 @@
             "named": true
           },
           {
+            "type": "pointer_type",
+            "named": true
+          },
+          {
             "type": "range_expression",
             "named": true
           },
@@ -3189,6 +3411,10 @@
           },
           {
             "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "type_assertion_expression",
             "named": true
           },
           {
@@ -3328,6 +3554,32 @@
     }
   },
   {
+    "type": "type_assertion_expression",
+    "named": true,
+    "fields": {
+      "operand": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "expression",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "unary_expression",
     "named": true,
     "fields": {
@@ -3388,7 +3640,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -3548,7 +3800,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -3604,7 +3856,7 @@
         "required": true,
         "types": [
           {
-            "type": "expression",
+            "type": "identifier",
             "named": true
           }
         ]
@@ -3625,11 +3877,15 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
         {
           "type": "attributes",
+          "named": true
+        },
+        {
+          "type": "tag",
           "named": true
         }
       ]

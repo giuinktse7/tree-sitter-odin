@@ -102,6 +102,18 @@ bool tree_sitter_odin_external_scanner_scan(void *payload, TSLexer *lexer, const
                 case '-':
                     if (i == 0 || (found_exponent && !found_number_after_expontent)) {
                         advance(lexer);
+                    } else if ((found_decimal || found_exponent) &&
+                               (found_number_after_decimal || found_number_before_decimal)) {
+                        lexer->result_symbol = FLOAT;
+                        lexer->mark_end(lexer);
+                        return true;
+                    } else {
+                        goto newline;
+                    }
+                    break;
+                case '_':
+                    if (found_number_before_decimal || found_number_after_decimal) {
+                        advance(lexer);
                     } else {
                         goto newline;
                     }

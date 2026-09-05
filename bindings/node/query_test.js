@@ -53,6 +53,11 @@ process :: proc(
 ) {
   target, other := source, target
   selected := object.member
+  result := receiver->method(argument)
+  asserted := value.(Thing)
+  for &entry, index in entries {
+    entry.field = index
+  }
 }`;
 
 function parse() {
@@ -102,6 +107,7 @@ test("highlight query uses semantic declaration and member fields", () => {
   assert.ok(hasCapture(captures, "field", "first", "field"));
   assert.ok(hasCapture(captures, "field", "enabled", "bit_field_member"));
   assert.ok(hasCapture(captures, "field", "member", "member_expression"));
+  assert.ok(hasCapture(captures, "function.call", "method", "selector_call_expression"));
   assert.ok(hasCapture(captures, "constant", "Alias", "enum_member"));
   assert.ok(hasCapture(captures, "constant", "Windows", "member_expression"));
   assert.equal(hasCapture(captures, "constant", "member", "member_expression"), false);
@@ -126,6 +132,9 @@ test("locals query distinguishes definitions from same-kind sibling references",
     capture => capture.name === "definition.var" && capture.node.text === "target",
   );
   assert.equal(targetDefinitions.length, 1);
+  assert.ok(hasCapture(captures, "definition.var", "entry", "for_statement"));
+  assert.ok(hasCapture(captures, "definition.var", "index", "for_statement"));
+  assert.equal(captures.some(capture => capture.name === "definition.var" && capture.node.text === "entries"), false);
 });
 
 test("fold and indent queries cover declaration-only and inline compound nodes", () => {
